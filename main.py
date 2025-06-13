@@ -49,7 +49,7 @@ class Worker:
         self.coordinates = get_coordinates(location)
 
 root = Tk()
-root.geometry("1200x720")
+root.geometry("1230x720")
 root.title("System zarzadzania siecią weterynaryjną")
 
 frame_list = Frame(root)
@@ -115,6 +115,7 @@ map_widget.pack(fill=BOTH, expand=True)
 map_widget.set_position(52.23, 21.0)
 map_widget.set_zoom(6)
 
+
 def add_pharmacy():
     name = entry_pharmacy_name.get()
     location = entry_pharmacy_location.get()
@@ -178,7 +179,29 @@ def show_workers_for_selected_pharmacy():
             if w.pharmacy == selected_pharmacy:
                 m = map_widget.set_marker(w.coordinates[0], w.coordinates[1], text=f"Pracownik: {w.name}")
                 markers.append(m)
+def remove_selected_pharmacy():
+    index = listbox_pharmacies.curselection()
+    if index:
+        selected = index[0]
+        del pharmacies[selected]
+        listbox_pharmacies.delete(selected)
+        clear_map()
 
+def remove_selected_worker():
+    index = listbox_workers.curselection()
+    if index:
+        selected = index[0]
+        del workers[selected]
+        listbox_workers.delete(selected)
+        clear_map()
+
+def remove_selected_client():
+    index = listbox_clients.curselection()
+    if index:
+        selected = index[0]
+        del clients[selected]
+        listbox_clients.delete(selected)
+        clear_map()
 Button(frame_buttons, text="Dodaj Placówkę", command=add_pharmacy).pack(side=LEFT)
 Button(frame_buttons, text="Dodaj Pracownika", command=add_worker).pack(side=LEFT)
 Button(frame_buttons, text="Dodaj Klienta", command=add_client).pack(side=LEFT)
@@ -186,5 +209,7 @@ Button(frame_buttons, text="Mapa Placówek", command=show_all_pharmacies).pack(s
 Button(frame_buttons, text="Mapa Pracowników", command=show_all_workers).pack(side=LEFT)
 Button(frame_buttons, text="Klienci Placówki", command=show_clients_for_selected_pharmacy).pack(side=LEFT)
 Button(frame_buttons, text="Pracownicy Placówki", command=show_workers_for_selected_pharmacy).pack(side=LEFT)
-
+Button(frame_buttons, text="Usuń Placówkę", command=remove_selected_pharmacy).pack(side=LEFT)
+Button(frame_buttons, text="Usuń Pracownika", command=remove_selected_worker).pack(side=LEFT)
+Button(frame_buttons, text="Usuń Klienta", command=remove_selected_client).pack(side=LEFT)
 root.mainloop()
