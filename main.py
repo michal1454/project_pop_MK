@@ -3,13 +3,11 @@ import tkintermapview
 import requests
 from bs4 import BeautifulSoup
 
-# Global lists
 pharmacies = []
 clients = []
 workers = []
 markers = []
 
-# Map initialization function
 def clear_map():
     global markers
     for marker in markers:
@@ -50,12 +48,10 @@ class Worker:
         self.pharmacy = pharmacy
         self.coordinates = get_coordinates(location)
 
-# GUI Setup
 root = Tk()
 root.geometry("1200x720")
 root.title("System zarzadzania siecią weterynaryjną")
 
-# Frames
 frame_list = Frame(root)
 frame_form = Frame(root)
 frame_buttons = Frame(root)
@@ -66,7 +62,6 @@ frame_form.pack(side=TOP, fill=X)
 frame_buttons.pack(side=TOP, fill=X)
 frame_map.pack(side=BOTTOM, fill=BOTH, expand=True)
 
-# Listboxes
 listbox_pharmacies = Listbox(frame_list, width=40)
 listbox_workers = Listbox(frame_list, width=40)
 listbox_clients = Listbox(frame_list, width=40)
@@ -78,7 +73,7 @@ listbox_workers.pack()
 Label(frame_list, text="Klienci").pack()
 listbox_clients.pack()
 
-# Form entries
+
 Label(frame_form, text="Nazwa placówki:").grid(row=0, column=0)
 entry_pharmacy_name = Entry(frame_form)
 entry_pharmacy_name.grid(row=0, column=1)
@@ -115,13 +110,11 @@ Label(frame_form, text="Lokalizacja 2:").grid(row=3, column=4)
 entry_client_loc2 = Entry(frame_form)
 entry_client_loc2.grid(row=3, column=5)
 
-# Map widget
 map_widget = tkintermapview.TkinterMapView(frame_map, width=1200, height=400, corner_radius=5)
 map_widget.pack(fill=BOTH, expand=True)
 map_widget.set_position(52.23, 21.0)
 map_widget.set_zoom(6)
 
-# Button actions
 def add_pharmacy():
     name = entry_pharmacy_name.get()
     location = entry_pharmacy_location.get()
@@ -186,7 +179,6 @@ def show_workers_for_selected_pharmacy():
                 m = map_widget.set_marker(w.coordinates[0], w.coordinates[1], text=f"Pracownik: {w.name}")
                 markers.append(m)
 
-# Buttons
 Button(frame_buttons, text="Dodaj Placówkę", command=add_pharmacy).pack(side=LEFT)
 Button(frame_buttons, text="Dodaj Pracownika", command=add_worker).pack(side=LEFT)
 Button(frame_buttons, text="Dodaj Klienta", command=add_client).pack(side=LEFT)
