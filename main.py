@@ -3,167 +3,196 @@ import tkintermapview
 import requests
 from bs4 import BeautifulSoup
 
+# Global lists
 pharmacies = []
 clients = []
 workers = []
+markers = []
+
+# Map initialization function
+def clear_map():
+    global markers
+    for marker in markers:
+        marker.delete()
+    markers = []
+
+def get_coordinates(place):
+    url = f"https://pl.wikipedia.org/wiki/{place}"
+    response = requests.get(url).text
+    response_html = BeautifulSoup(response, "html.parser")
+    try:
+        longitude = float(response_html.select(".longitude")[1].text.replace(",", "."))
+        latitude = float(response_html.select(".latitude")[1].text.replace(",", "."))
+        return [latitude, longitude]
+    except IndexError:
+        return [52.23, 21.0]  # fallback to Warsaw
 
 class Pharmacy:
     def __init__(self, name, location):
         self.name = name
         self.location = location
-        self.coordinates = self.get_coordinates()
-
-    def get_coordinates(self):
-        url = f"https://pl.wikipedia.org/wiki/{self.location}"
-        response = requests.get(url).text
-        soup = BeautifulSoup(response, "html.parser")
-        try:
-            latitude = float(soup.select_one(".latitude").text.replace(",", "."))
-            longitude = float(soup.select_one(".longitude").text.replace(",", "."))
-            return [latitude, longitude]
-        except:
-            return [0.0, 0.0]
+        self.coordinates = get_coordinates(location)
 
 class Client:
-    def __init__(self, name, service, location1, location2):
+    def __init__(self, name, service, location1, location2, pharmacy):
         self.name = name
         self.service = service
         self.location1 = location1
         self.location2 = location2
-        self.coordinates = self.get_coordinates()
-
-    def get_coordinates(self):
-        url = f"https://pl.wikipedia.org/wiki/{self.location2}"
-        response = requests.get(url).text
-        soup = BeautifulSoup(response, "html.parser")
-        try:
-            latitude = float(soup.select_one(".latitude").text.replace(",", "."))
-            longitude = float(soup.select_one(".longitude").text.replace(",", "."))
-            return [latitude, longitude]
-        except:
-            return [0.0, 0.0]
+        self.pharmacy = pharmacy  # reference to Pharmacy object
+        self.coordinates = get_coordinates(location2)
 
 class Worker:
-    def __init__(self, name, service, location):
+    def __init__(self, name, service, location, pharmacy):
         self.name = name
         self.service = service
         self.location = location
-        self.coordinates = self.get_coordinates()
+        self.pharmacy = pharmacy
+        self.coordinates = get_coordinates(location)
 
-    def get_coordinates(self):
-        url = f"https://pl.wikipedia.org/wiki/{self.location}"
-        response = requests.get(url).text
-        soup = BeautifulSoup(response, "html.parser")
-        try:
-            latitude = float(soup.select_one(".latitude").text.replace(",", "."))
-            longitude = float(soup.select_one(".longitude").text.replace(",", "."))
-            return [latitude, longitude]
-        except:
-            return [0.0, 0.0]
-
-def dodaj_pharmacy():
-    name = entry_name.get()
-    location = entry_location.get()
-    pharmacy = Pharmacy(name, location)
-    pharmacies.append(pharmacy)
-    listbox_lista_obiektow.insert(END, f"{pharmacy.name} ({pharmacy.location})")
-    map_widget.set_marker(*pharmacy.coordinates, text=pharmacy.name)
-
-def usun_pharmacy():
-    index = listbox_lista_obiektow.curselection()
-    if index:
-        del pharmacies[index[0]]
-        listbox_lista_obiektow.delete(index)
-
-def dodaj_worker():
-    name = entry_name.get()
-    service = entry_posts.get()
-    location = entry_location.get()
-    worker = Worker(name, service, location)
-    workers.append(worker)
-    listbox_lista_obiektow_klient.insert(END, f"{worker.name} ({worker.location})")
-    map_widget.set_marker(*worker.coordinates, text=worker.name)
-
-def usun_worker():
-    index = listbox_lista_obiektow_klient.curselection()
-    if index:
-        del workers[index[0]]
-        listbox_lista_obiektow_klient.delete(index)
-
-def dodaj_client():
-    name = entry_name.get()
-    service = entry_posts.get()
-    location1 = entry_location.get()
-    location2 = entry_location.get()  # zakładamy, że podano tę samą lokalizację
-    client = Client(name, service, location1, location2)
-    clients.append(client)
-    listbox_lista_obiektow_klient_2.insert(END, f"{client.name} ({client.location2})")
-    map_widget.set_marker(*client.coordinates, text=client.name)
-
-def usun_client():
-    index = listbox_lista_obiektow_klient_2.curselection()
-    if index:
-        del clients[index[0]]
-        listbox_lista_obiektow_klient_2.delete(index)
-
+# GUI Setup
 root = Tk()
 root.geometry("1200x720")
-root.title("Projekt pop pf")
+root.title("System zarzadzania siecią weterynaryjną")
 
-ramka_lista_obiektow = Frame(root)
-ramka_formularz = Frame(root)
-ramka_szczegoly_obiektow = Frame(root)
-ramka_mapa = Frame(root)
+# Frames
+frame_list = Frame(root)
+frame_form = Frame(root)
+frame_buttons = Frame(root)
+frame_map = Frame(root)
 
-ramka_lista_obiektow.grid(row=0, column=0, rowspan=2, sticky=N)
-ramka_formularz.grid(row=0, column=1, sticky=N)
-ramka_szczegoly_obiektow.grid(row=1, column=1, sticky=N)
-ramka_mapa.grid(row=2, column=0, columnspan=2)
+frame_list.pack(side=LEFT, fill=Y)
+frame_form.pack(side=TOP, fill=X)
+frame_buttons.pack(side=TOP, fill=X)
+frame_map.pack(side=BOTTOM, fill=BOTH, expand=True)
 
-# lista placówek
-Label(ramka_lista_obiektow, text="Placówki").grid(row=0, column=0, columnspan=2)
-listbox_lista_obiektow = Listbox(ramka_lista_obiektow, width=40, height=10)
-listbox_lista_obiektow.grid(row=1, column=0, columnspan=2)
-Button(ramka_lista_obiektow, text='Dodaj', command=dodaj_pharmacy).grid(row=2, column=0)
-Button(ramka_lista_obiektow, text='Usuń', command=usun_pharmacy).grid(row=2, column=1)
+# Listboxes
+listbox_pharmacies = Listbox(frame_list, width=40)
+listbox_workers = Listbox(frame_list, width=40)
+listbox_clients = Listbox(frame_list, width=40)
 
-# lista pracowników
-Label(ramka_lista_obiektow, text="Pracownicy").grid(row=3, column=0, columnspan=2)
-listbox_lista_obiektow_klient = Listbox(ramka_lista_obiektow, width=40, height=10)
-listbox_lista_obiektow_klient.grid(row=4, column=0, columnspan=2)
-Button(ramka_lista_obiektow, text='Dodaj', command=dodaj_worker).grid(row=5, column=0)
-Button(ramka_lista_obiektow, text='Usuń', command=usun_worker).grid(row=5, column=1)
+Label(frame_list, text="Placówki").pack()
+listbox_pharmacies.pack()
+Label(frame_list, text="Pracownicy").pack()
+listbox_workers.pack()
+Label(frame_list, text="Klienci").pack()
+listbox_clients.pack()
 
-# lista klientów
-Label(ramka_lista_obiektow, text="Klienci").grid(row=6, column=0, columnspan=2)
-listbox_lista_obiektow_klient_2 = Listbox(ramka_lista_obiektow, width=40, height=10)
-listbox_lista_obiektow_klient_2.grid(row=7, column=0, columnspan=2)
-Button(ramka_lista_obiektow, text='Dodaj', command=dodaj_client).grid(row=8, column=0)
-Button(ramka_lista_obiektow, text='Usuń', command=usun_client).grid(row=8, column=1)
+# Form entries
+Label(frame_form, text="Nazwa placówki:").grid(row=0, column=0)
+entry_pharmacy_name = Entry(frame_form)
+entry_pharmacy_name.grid(row=0, column=1)
 
-# formularz
-Label(ramka_formularz, text="Formularz").grid(row=0, column=0, columnspan=2)
-Label(ramka_formularz, text="Imię:").grid(row=1, column=0, sticky=W)
-Label(ramka_formularz, text="Nazwisko:").grid(row=2, column=0, sticky=W)
-Label(ramka_formularz, text="Miejscowość:").grid(row=3, column=0, sticky=W)
-Label(ramka_formularz, text="Usługa:").grid(row=4, column=0, sticky=W)
+Label(frame_form, text="Lokalizacja placówki:").grid(row=1, column=0)
+entry_pharmacy_location = Entry(frame_form)
+entry_pharmacy_location.grid(row=1, column=1)
 
-entry_name = Entry(ramka_formularz)
-entry_name.grid(row=1, column=1)
-entry_surname = Entry(ramka_formularz)
-entry_surname.grid(row=2, column=1)
-entry_location = Entry(ramka_formularz)
-entry_location.grid(row=3, column=1)
-entry_posts = Entry(ramka_formularz)
-entry_posts.grid(row=4, column=1)
+Label(frame_form, text="Imię pracownika:").grid(row=0, column=2)
+entry_worker_name = Entry(frame_form)
+entry_worker_name.grid(row=0, column=3)
 
-# szczegóły obiektów
-Label(ramka_szczegoly_obiektow, text="Szczegóły obiektu: ...").grid(row=0, column=0)
+Label(frame_form, text="Usługa:").grid(row=1, column=2)
+entry_worker_service = Entry(frame_form)
+entry_worker_service.grid(row=1, column=3)
 
-# mapa
-map_widget = tkintermapview.TkinterMapView(ramka_mapa, width=1200, height=500, corner_radius=5)
-map_widget.grid(row=0, column=0, columnspan=2)
+Label(frame_form, text="Miasto pracownika:").grid(row=2, column=2)
+entry_worker_location = Entry(frame_form)
+entry_worker_location.grid(row=2, column=3)
+
+Label(frame_form, text="Imię klienta:").grid(row=0, column=4)
+entry_client_name = Entry(frame_form)
+entry_client_name.grid(row=0, column=5)
+
+Label(frame_form, text="Usługa klienta:").grid(row=1, column=4)
+entry_client_service = Entry(frame_form)
+entry_client_service.grid(row=1, column=5)
+
+Label(frame_form, text="Lokalizacja 1:").grid(row=2, column=4)
+entry_client_loc1 = Entry(frame_form)
+entry_client_loc1.grid(row=2, column=5)
+
+Label(frame_form, text="Lokalizacja 2:").grid(row=3, column=4)
+entry_client_loc2 = Entry(frame_form)
+entry_client_loc2.grid(row=3, column=5)
+
+# Map widget
+map_widget = tkintermapview.TkinterMapView(frame_map, width=1200, height=400, corner_radius=5)
+map_widget.pack(fill=BOTH, expand=True)
 map_widget.set_position(52.23, 21.0)
 map_widget.set_zoom(6)
+
+# Button actions
+def add_pharmacy():
+    name = entry_pharmacy_name.get()
+    location = entry_pharmacy_location.get()
+    p = Pharmacy(name, location)
+    pharmacies.append(p)
+    listbox_pharmacies.insert(END, name)
+    marker = map_widget.set_marker(p.coordinates[0], p.coordinates[1], text=f"Placówka: {name}")
+    markers.append(marker)
+
+def add_worker():
+    name = entry_worker_name.get()
+    service = entry_worker_service.get()
+    location = entry_worker_location.get()
+    if pharmacies:
+        worker = Worker(name, service, location, pharmacies[-1])
+        workers.append(worker)
+        listbox_workers.insert(END, name)
+        marker = map_widget.set_marker(worker.coordinates[0], worker.coordinates[1], text=f"Pracownik: {name}")
+        markers.append(marker)
+
+def add_client():
+    name = entry_client_name.get()
+    service = entry_client_service.get()
+    loc1 = entry_client_loc1.get()
+    loc2 = entry_client_loc2.get()
+    if pharmacies:
+        client = Client(name, service, loc1, loc2, pharmacies[-1])
+        clients.append(client)
+        listbox_clients.insert(END, name)
+        marker = map_widget.set_marker(client.coordinates[0], client.coordinates[1], text=f"Klient: {name}")
+        markers.append(marker)
+
+def show_all_pharmacies():
+    clear_map()
+    for p in pharmacies:
+        m = map_widget.set_marker(p.coordinates[0], p.coordinates[1], text=f"Placówka: {p.name}")
+        markers.append(m)
+
+def show_all_workers():
+    clear_map()
+    for w in workers:
+        m = map_widget.set_marker(w.coordinates[0], w.coordinates[1], text=f"Pracownik: {w.name}")
+        markers.append(m)
+
+def show_clients_for_selected_pharmacy():
+    clear_map()
+    index = listbox_pharmacies.curselection()
+    if index:
+        selected_pharmacy = pharmacies[index[0]]
+        for c in clients:
+            if c.pharmacy == selected_pharmacy:
+                m = map_widget.set_marker(c.coordinates[0], c.coordinates[1], text=f"Klient: {c.name}")
+                markers.append(m)
+
+def show_workers_for_selected_pharmacy():
+    clear_map()
+    index = listbox_pharmacies.curselection()
+    if index:
+        selected_pharmacy = pharmacies[index[0]]
+        for w in workers:
+            if w.pharmacy == selected_pharmacy:
+                m = map_widget.set_marker(w.coordinates[0], w.coordinates[1], text=f"Pracownik: {w.name}")
+                markers.append(m)
+
+# Buttons
+Button(frame_buttons, text="Dodaj Placówkę", command=add_pharmacy).pack(side=LEFT)
+Button(frame_buttons, text="Dodaj Pracownika", command=add_worker).pack(side=LEFT)
+Button(frame_buttons, text="Dodaj Klienta", command=add_client).pack(side=LEFT)
+Button(frame_buttons, text="Mapa Placówek", command=show_all_pharmacies).pack(side=LEFT)
+Button(frame_buttons, text="Mapa Pracowników", command=show_all_workers).pack(side=LEFT)
+Button(frame_buttons, text="Klienci Placówki", command=show_clients_for_selected_pharmacy).pack(side=LEFT)
+Button(frame_buttons, text="Pracownicy Placówki", command=show_workers_for_selected_pharmacy).pack(side=LEFT)
 
 root.mainloop()
