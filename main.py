@@ -74,7 +74,7 @@ class Workers:
 
 
 root = Tk()
-root.geometry("1600x720")
+root.geometry("1200x720")
 root.title("Projekt pop pf")
 
 
@@ -90,21 +90,21 @@ ramka_mapa.grid(row=2, column=0, columnspan=2)
 
 # ramka_lista_obiektow
 label_lista_obiektow=Label(ramka_lista_obiektow, text="Lista użytkowników")
-label_lista_obiektow.grid(row=0, column=0,columnspan=1)
+label_lista_obiektow.grid(row=0, column=0,columnspan=2)
 listbox_lista_obiketow=Listbox(ramka_lista_obiektow, width=40, height=10)
-listbox_lista_obiketow.grid(row=1, column=0, columnspan=1)
+listbox_lista_obiketow.grid(row=1, column=0, columnspan=3)
 button_pokaz_szczegoly_obiektu=Button(ramka_lista_obiektow, text='Pokaż szczegóły')
-button_pokaz_szczegoly_obiektu.grid(row=2, column=0,sticky=W)
+button_pokaz_szczegoly_obiektu.grid(row=2, column=0)
 button_usun_obiekt=Button(ramka_lista_obiektow, text='Usuń obiekt')
-button_usun_obiekt.grid(row=2, column=1,)
+button_usun_obiekt.grid(row=2, column=1)
 button_edytuj_obiekt=Button(ramka_lista_obiektow, text='Edytuj obiekt')
 button_edytuj_obiekt.grid(row=2, column=2)
 
 
 label_lista_obiektow_klient=Label(ramka_lista_obiektow, text="Lista użytkowników")
-label_lista_obiektow_klient.grid(row=0, column=1,columnspan=1)
+label_lista_obiektow_klient.grid(row=0, column=3,columnspan=2)
 listbox_lista_obiektow_klient=Listbox(ramka_lista_obiektow, width=40, height=10)
-listbox_lista_obiektow_klient.grid(row=1, column=1, columnspan=1)
+listbox_lista_obiektow_klient.grid(row=1, column=3, columnspan=3)
 button_pokaz_szczegoly_obiektu_klient=Button(ramka_lista_obiektow, text='Pokaż szczegóły')
 button_pokaz_szczegoly_obiektu_klient.grid(row=2, column=3)
 button_usun_obiekt_klient=Button(ramka_lista_obiektow, text='Usuń obiekt')
@@ -113,15 +113,15 @@ button_edytuj_obiekt_klient=Button(ramka_lista_obiektow, text='Edytuj obiekt')
 button_edytuj_obiekt_klient.grid(row=2, column=5)
 
 label_lista_obiektow_klient=Label(ramka_lista_obiektow, text="Lista użytkowników")
-label_lista_obiektow_klient.grid(row=0, column=2,columnspan=1)
+label_lista_obiektow_klient.grid(row=0, column=6,columnspan=2)
 listbox_lista_obiektow_klient=Listbox(ramka_lista_obiektow, width=40, height=10)
-listbox_lista_obiektow_klient.grid(row=1, column=2, columnspan=1)
+listbox_lista_obiektow_klient.grid(row=1, column=6, columnspan=3)
 button_pokaz_szczegoly_obiektu_klient=Button(ramka_lista_obiektow, text='Pokaż szczegóły')
 button_pokaz_szczegoly_obiektu_klient.grid(row=2, column=6)
 button_usun_obiekt_klient=Button(ramka_lista_obiektow, text='Usuń obiekt')
 button_usun_obiekt_klient.grid(row=2, column=7)
 button_edytuj_obiekt_klient=Button(ramka_lista_obiektow, text='Edytuj obiekt')
-button_edytuj_obiekt_klient.grid(row=2, column=8)
+button_edytuj_obiekt_klient.grid(row=2,column=8)
 
 # ramka_formularz
 label_formularz=Label(ramka_formularz, text="Formularz")
